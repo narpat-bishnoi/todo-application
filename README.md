@@ -209,6 +209,24 @@ npm run dev
 php artisan serve
 ```
 
+**Note**: The application uses queues for processing email notifications in the background. To process queued jobs:
+
+```bash
+php artisan queue:work
+```
+
+Or use the included development script which runs everything concurrently:
+
+```bash
+composer run dev
+```
+
+This will start:
+- PHP development server
+- Queue worker (for processing emails)
+- Log viewer
+- Vite dev server (for frontend assets)
+
 
 ## License
 
