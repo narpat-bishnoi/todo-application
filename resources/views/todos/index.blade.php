@@ -99,14 +99,98 @@
                                 </div>
                             @else
                                 @if($todo->isAssignedTo(auth()->user()) && $todo->status !== 'completed')
-                                    <form method="POST" action="{{ route('todos.update', $todo) }}" class="inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        <select name="status" onchange="this.form.submit()" class="text-sm border-gray-300 rounded-md">
-                                            <option value="in_progress" {{ $todo->status === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                            <option value="completed" {{ $todo->status === 'completed' ? 'selected' : '' }}>Completed</option>
-                                        </select>
-                                    </form>
+                                    <div x-data="{ 
+                                        showConfirm{{ $todo->id }}: false, 
+                                        currentStatus{{ $todo->id }}: '{{ $todo->status }}',
+                                        newStatus{{ $todo->id }}: '',
+                                        handleStatusChange(event) {
+                                            const selectEl = event.target;
+                                            const newValue = selectEl.value;
+                                            const currentValue = '{{ $todo->status }}';
+                                            
+                                            // Don't show confirmation if selecting current status
+                                            if (newValue === '' || newValue === currentValue) {
+                                                selectEl.value = currentValue;
+                                                return;
+                                            }
+                                            
+                                            // Store the new status
+                                            this.newStatus{{ $todo->id }} = newValue;
+                                            
+                                            // Reset select to current value
+                                            selectEl.value = currentValue;
+                                            
+                                            // Show confirmation modal
+                                            this.showConfirm{{ $todo->id }} = true;
+                                        },
+                                        cancelChange() {
+                                            this.showConfirm{{ $todo->id }} = false;
+                                            this.newStatus{{ $todo->id }} = '';
+                                            // Ensure select is reset
+                                            const selectEl = document.getElementById('status-select-{{ $todo->id }}');
+                                            if (selectEl) {
+                                                selectEl.value = '{{ $todo->status == 'open' ? '' : $todo->status }}';
+                                            }
+                                        },
+                                        confirmChange() {
+                                            this.showConfirm{{ $todo->id }} = false;
+                                            // Set the status value and submit
+                                            const selectEl = document.getElementById('status-select-{{ $todo->id }}');
+                                            if (selectEl) {
+                                                selectEl.value = this.newStatus{{ $todo->id }};
+                                            }
+                                            document.getElementById('status-form-{{ $todo->id }}').submit();
+                                        }
+                                    }">
+                                        <form id="status-form-{{ $todo->id }}" method="POST" action="{{ route('todos.update', $todo) }}" class="inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <select 
+                                                id="status-select-{{ $todo->id }}"
+                                                name="status" 
+                                                class="text-sm border-gray-300 rounded-md"
+                                                @change="handleStatusChange($event)"
+                                            >
+                                                <option value="" {{ $todo->status === 'open' ? 'selected' : '' }}>Select Status</option>
+                                                <option value="in_progress" {{ $todo->status === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                                <option value="completed" {{ $todo->status === 'completed' ? 'selected' : '' }}>Completed</option>
+                                            </select>
+                                        </form>
+                                        
+                                        <!-- Confirmation Modal -->
+                                        <div 
+                                            x-show="showConfirm{{ $todo->id }}"
+                                            x-cloak
+                                            class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+                                            @click.away="cancelChange()"
+                                        >
+                                            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                                                <div class="mt-3">
+                                                    <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Status Change</h3>
+                                                    <p class="text-sm text-gray-500 mb-4" style="white-space: normal;">
+                                                        Are you sure you want to change the status to 
+                                                        <span class="font-semibold" x-text="newStatus{{ $todo->id }} === 'in_progress' ? 'In Progress' : 'Completed'"></span>?
+                                                    </p>
+                                                    <div class="flex justify-end space-x-3">
+                                                        <button 
+                                                            type="button"
+                                                            @click="cancelChange()"
+                                                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                        <button 
+                                                            type="button"
+                                                            @click="confirmChange()"
+                                                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                        >
+                                                            Confirm
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @else
                                     <span class="text-gray-400">No actions</span>
                                 @endif
