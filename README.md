@@ -209,13 +209,6 @@ npm run dev
 php artisan serve
 ```
 
-## Testing
-
-Run tests with:
-
-```bash
-php artisan test
-```
 
 ## License
 
