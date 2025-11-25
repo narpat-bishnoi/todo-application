@@ -11,14 +11,14 @@ This application provides a comprehensive TODO management system with two user r
 
 ## Features
 
-- ✅ User authentication (login/logout)
-- ✅ Role-based access control (Admin/Employee)
-- ✅ Employee invitation system via email
-- ✅ Todo CRUD operations with permissions
-- ✅ Todo assignment and status tracking
-- ✅ Email notifications when todos are assigned
-- ✅ Database notifications
-- ✅ Modern UI with Tailwind CSS and Alpine.js
+- User authentication (login/logout)
+- Role-based access control (Admin/Employee)
+- Employee invitation system via email
+- Todo CRUD operations with permissions
+- Todo assignment and status tracking
+- Email notifications when todos are assigned
+- Database notifications
+- Modern UI with Tailwind CSS and Alpine.js
 
 ## Tech Stack
 
@@ -37,13 +37,13 @@ This application provides a comprehensive TODO management system with two user r
 - MySQL server running on `127.0.0.1` with:
   - Database name: `todo_task`
   - Username: `root`
-  - Password: (empty)
+  - Password:
 
 ## Setup Instructions
 
 1. **Clone the repository** (if applicable):
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/narpat-bishnoi/todo-application
    cd todo-assignment
    ```
 
