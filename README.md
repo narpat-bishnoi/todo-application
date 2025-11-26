@@ -12,18 +12,20 @@ This application provides a comprehensive TODO management system with two user r
 ## Features
 
 - User authentication (login/logout)
-- Role-based access control (Admin/Employee)
+- Role-based access control using Spatie Laravel Permission (Admin/Employee)
 - Employee invitation system via email
 - Todo CRUD operations with permissions
 - Todo assignment and status tracking
-- Email notifications when todos are assigned
+- Email notifications when todos are assigned (processed in background queue)
 - Database notifications
 - Modern UI with Tailwind CSS and Alpine.js
+- Confirmation dialogs for status changes
 
 ## Tech Stack
 
 - **Framework**: Laravel 12
 - **Database**: MySQL
+- **Role Management**: Spatie Laravel Permission
 - **Frontend**: Tailwind CSS 4, Alpine.js
 - **Templating**: Blade
 - **Asset Bundling**: Vite
@@ -84,7 +86,10 @@ This application provides a comprehensive TODO management system with two user r
    
    This will:
    - Create all necessary tables (users, todos, invitations, notifications)
-   - Create the default admin user
+   - Create Spatie permission tables (roles, permissions, model_has_roles, etc.)
+   - Create roles (admin, employee) and permissions
+   - Create the default admin user with admin role assigned
+   - Remove the old role enum column from users table
 
 7. **Install Node dependencies**:
    ```bash
@@ -124,7 +129,7 @@ This application provides a comprehensive TODO management system with two user r
 4. An invitation email is sent with a unique token link
 5. Employee clicks the link and is taken to the acceptance page
 6. Employee enters their name and password
-7. Account is created with `employee` role
+7. Account is created and assigned the `employee` role (via Spatie)
 8. Employee is automatically logged in and redirected to dashboard
 
 ### Todo Management
@@ -144,6 +149,7 @@ This application provides a comprehensive TODO management system with two user r
 - Update status of their assigned todos to:
   - `in_progress`
   - `completed`
+- Confirmation dialog appears before status change is submitted
 - Cannot:
   - Change title or description
   - Reassign todos
@@ -156,11 +162,13 @@ This application provides a comprehensive TODO management system with two user r
   - An email notification with the todo title and a link to view todos
   - A database notification stored in the `notifications` table
 - Notifications are sent via both `mail` and `database` channels
+- **Email notifications are processed in the background** using Laravel queues for better performance
 
 ## Database Structure
 
 ### Users Table
-- `id`, `name`, `email`, `password`, `role` (enum: 'admin', 'employee'), `timestamps`
+- `id`, `name`, `email`, `password`, `timestamps`
+- **Note**: Roles are managed via Spatie Laravel Permission (see Roles & Permissions tables below)
 
 ### Invitations Table
 - `id`, `email` (unique), `token` (unique, 32 chars), `invited_by` (FK), `accepted_at` (nullable), `timestamps`
@@ -170,6 +178,26 @@ This application provides a comprehensive TODO management system with two user r
 
 ### Notifications Table
 - Standard Laravel notifications table structure
+
+### Roles & Permissions Tables (Spatie Laravel Permission)
+- **roles**: `id`, `name`, `guard_name`, `timestamps`
+- **permissions**: `id`, `name`, `guard_name`, `timestamps`
+- **model_has_roles**: Pivot table linking users to roles
+- **model_has_permissions**: Pivot table linking users to permissions
+- **role_has_permissions**: Pivot table linking roles to permissions
+
+### Available Roles
+- **admin**: Full access to all features
+- **employee**: Limited access (can only view assigned todos)
+
+### Available Permissions
+- `manage todos` - Full todo management (admin only)
+- `view todos` - View todos (both roles)
+- `create todos` - Create new todos (admin only)
+- `edit todos` - Edit todos (admin only)
+- `delete todos` - Delete todos (admin only)
+- `manage invitations` - Manage invitations (admin only)
+- `invite employees` - Send invitations (admin only)
 
 ## Routes
 
@@ -189,6 +217,7 @@ This application provides a comprehensive TODO management system with two user r
 - `DELETE /todos/{id}` - Delete todo (admin only)
 
 ### Admin Only Routes
+- `GET /invitations` - View all invitations with status
 - `GET /invitations/create` - Invite employee form
 - `POST /invitations` - Send invitation
 
@@ -196,9 +225,11 @@ This application provides a comprehensive TODO management system with two user r
 
 - PSR-12 coding style
 - Proper validation in controllers
-- Middleware for role-based access control
+- Middleware for role-based access control using Spatie
+- Spatie Laravel Permission for flexible role/permission management
 - Clean separation of concerns
 - Comprehensive error handling
+- Background job processing for emails
 
 ## Development
 
@@ -226,6 +257,16 @@ This will start:
 - Queue worker (for processing emails)
 - Log viewer
 - Vite dev server (for frontend assets)
+
+### Queue Configuration
+
+The application uses the `database` queue driver by default. Make sure your `.env` has:
+
+```env
+QUEUE_CONNECTION=database
+```
+
+The `jobs` table is created automatically by Laravel migrations.
 
 
 ## License
