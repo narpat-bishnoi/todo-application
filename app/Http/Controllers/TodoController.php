@@ -7,9 +7,15 @@ use App\Models\User;
 use App\Notifications\TodoAssignedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Routing\Controller;
 
 class TodoController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('admin')->except(['index', 'update']);
+    }
     /**
      * Display a listing of the resource.
      */
@@ -36,11 +42,7 @@ class TodoController extends Controller
      */
     public function create()
     {
-        if (!auth()->user()->isAdmin()) {
-            abort(403);
-        }
-
-        $employees = User::where('role', 'employee')->get();
+        $employees = User::role('employee')->get();
 
         return view('todos.create', compact('employees'));
     }
@@ -50,10 +52,6 @@ class TodoController extends Controller
      */
     public function store(Request $request)
     {
-        if (!auth()->user()->isAdmin()) {
-            abort(403);
-        }
-
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -99,12 +97,9 @@ class TodoController extends Controller
      */
     public function edit(string $id)
     {
-        if (!auth()->user()->isAdmin()) {
-            abort(403);
-        }
 
         $todo = Todo::findOrFail($id);
-        $employees = User::where('role', 'employee')->get();
+        $employees = User::role('employee')->get();
 
         return view('todos.edit', compact('todo', 'employees'));
     }
@@ -162,10 +157,6 @@ class TodoController extends Controller
      */
     public function destroy(string $id)
     {
-        if (!auth()->user()->isAdmin()) {
-            abort(403);
-        }
-
         $todo = Todo::findOrFail($id);
         $todo->delete();
 

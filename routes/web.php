@@ -22,7 +22,7 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('dashboard');
     });
 
-    // Todos
+    // Todos (admin and employee)
     Route::resource('todos', TodoController::class);
 
     // Invitations (admin only)

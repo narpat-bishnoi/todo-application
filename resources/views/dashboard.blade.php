@@ -9,7 +9,7 @@
         
         <div class="mb-6">
             <span class="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded">
-                {{ ucfirst(auth()->user()->role) }}
+                {{ auth()->user()->getRoleName() }}
             </span>
         </div>
 

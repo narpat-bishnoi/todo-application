@@ -110,8 +110,10 @@ class InvitationController extends Controller
             'name' => $validated['name'],
             'email' => $invitation->email,
             'password' => Hash::make($validated['password']),
-            'role' => 'employee',
         ]);
+
+        // Assign employee role
+        $user->assignRole('employee');
 
         $invitation->update([
             'accepted_at' => now(),

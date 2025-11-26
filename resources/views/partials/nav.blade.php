@@ -31,7 +31,7 @@
                     <span class="text-sm text-gray-700">
                         {{ auth()->user()->name }} 
                         <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            {{ ucfirst(auth()->user()->role) }}
+                            {{ auth()->user()->getRoleName() }}
                         </span>
                     </span>
                     <form method="POST" action="{{ route('logout') }}">
